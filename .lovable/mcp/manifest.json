@@ -1,0 +1,268 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://qmsikyewsznblhykrywr.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "uendi-mcp",
+      "version": "0.3.0",
+      "title": "Uendi Platform MCP"
+    },
+    "tools": [
+      {
+        "name": "list_courses",
+        "title": "Listo kurset",
+        "description": "Kthen kurset që përdoruesi i lidhur ka të drejtë të shohë (mësuesi të vetat, nxënësi ato ku është regjistruar).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "description": "Numri maksimal i kurseve",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "platform_stats",
+        "title": "Statistika të platformës",
+        "description": "Numri i kurseve, temave dhe detyrave që janë të dukshme për përdoruesin e lidhur.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "low_stock_items",
+        "title": "Artikuj me stok të ulët",
+        "description": "Kthen artikujt e inventarit nën një prag të dhënë sasie (vetëm për përdorues me akses ERP).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "threshold": {
+              "description": "Prag i sasisë (default 5)",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "upcoming_homework",
+        "title": "Detyrat e ardhshme",
+        "description": "Detyrat me afat në ditët e ardhshme, të filtruara sipas të drejtave të përdoruesit.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "days": {
+              "description": "Ditë përpara (default 14)",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 90
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_course",
+        "title": "Krijo kurs",
+        "description": "Krijon një kurs të ri draft për mësuesin e lidhur.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 3,
+              "description": "Titulli i kursit"
+            },
+            "description": {
+              "description": "Përshkrimi i shkurtër",
+              "type": "string"
+            },
+            "drejtimi": {
+              "type": "string",
+              "description": "Drejtimi, p.sh. 'tik' ose 'elektroteknike'"
+            },
+            "klasa": {
+              "type": "string",
+              "description": "Klasa, p.sh. '10'"
+            },
+            "paralelja": {
+              "description": "Paralelja, p.sh. 'A'",
+              "type": "string"
+            }
+          },
+          "required": [
+            "title",
+            "drejtimi",
+            "klasa"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "review_enrollment",
+        "title": "Aprovo ose refuzo regjistrim",
+        "description": "Ndryshon statusin e një kërkese regjistrimi (approved/rejected) për një kurs të mësuesit të lidhur.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "enrollment_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "ID e regjistrimit"
+            },
+            "decision": {
+              "type": "string",
+              "enum": [
+                "approved",
+                "rejected"
+              ],
+              "description": "Vendimi"
+            }
+          },
+          "required": [
+            "enrollment_id",
+            "decision"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_announcement",
+        "title": "Krijo njoftim",
+        "description": "Publikon një njoftim për një audiencë të caktuar (all, students, teachers, parents).",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 3,
+              "description": "Titulli i njoftimit"
+            },
+            "body": {
+              "type": "string",
+              "minLength": 3,
+              "description": "Përmbajtja e njoftimit"
+            },
+            "audience": {
+              "description": "Audienca (default all)",
+              "type": "string",
+              "enum": [
+                "all",
+                "students",
+                "teachers",
+                "parents"
+              ]
+            }
+          },
+          "required": [
+            "title",
+            "body"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_ticket",
+        "title": "Krijo tiket CRM",
+        "description": "Hap një tiket të ri mbështetjeje në CRM në emër të përdoruesit të lidhur.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "subject": {
+              "type": "string",
+              "minLength": 3,
+              "description": "Subjekti i tiketit"
+            },
+            "description": {
+              "description": "Përshkrimi i problemit",
+              "type": "string"
+            },
+            "priority": {
+              "description": "Prioriteti (default medium)",
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "urgent"
+              ]
+            }
+          },
+          "required": [
+            "subject"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

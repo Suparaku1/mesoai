@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1788612510042,
+      "tag": "0000_create_email_log",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788696062816,
+      "tag": "0001_add_email_log_body",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788698775926,
+      "tag": "0002_phase6_security_hardening",
+      "breakpoints": true
+    }
+  ]
+}
