@@ -46,7 +46,7 @@ function AdminUsersPage() {
       toast.success(t("adm.users.roleUpdated"));
       qc.invalidateQueries({ queryKey: ["admin-users"] });
     },
-    onError: (e: any) => toast.error(e?.message ?? t("adm.users.error")),
+    onError: (e: Error) => toast.error(e?.message ?? t("adm.users.error")),
   });
 
   if (error) {

@@ -95,7 +95,7 @@ function CrmOverview() {
           {t("crm.recentLeadsDesc")}
         </p>
         <div className="divide-y divide-border">
-          {(data?.recentLeads ?? []).map((l: any) => (
+          {(data?.recentLeads ?? []).map((l) => (
             <div key={l.id} className="py-2 flex items-center justify-between gap-3 text-sm">
               <div className="min-w-0">
                 <div className="truncate font-medium">{l.title}</div>

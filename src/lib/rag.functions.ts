@@ -67,31 +67,30 @@ export const ingestCourseKnowledge = createServerFn({ method: "POST" })
       .from("topics")
       .select("id, title, summary, explanation, examples, exercises_solved")
       .eq("course_id", data.courseId)
+      .is("deleted_at", null)
       .order("order_index");
     if (error) throw error;
     if (!topics?.length) throw new Error("Kursi s'ka tema për të indeksuar");
 
     // Load admin client to bypass RLS for the bulk write
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("course_chunks").delete().eq("course_id", data.courseId);
-
-    let inserted = 0;
+    const rows: Array<{ topic_id: string; content: string; embedding: string; metadata: { title: string } }> = [];
     for (const t of topics) {
       const chunks = chunkTopic(t);
       if (!chunks.length) continue;
 
       // Embed in small batches to stay under gateway limits
       const embeddings = await embedTexts(apiKey, chunks);
-      const rows = chunks.map((content, i) => ({
-        course_id: data.courseId,
+      if (embeddings.length !== chunks.length || embeddings.some((e) => e.length !== 768)) throw new Error("Indeksi AI nuk është i plotë.");
+      rows.push(...chunks.map((content, i) => ({
         topic_id: t.id,
         content,
-        embedding: embeddings[i] as unknown as string,
+        embedding: JSON.stringify(embeddings[i]),
         metadata: { title: t.title },
-      }));
-      const { error: insErr } = await supabaseAdmin.from("course_chunks").insert(rows);
-      if (insErr) throw insErr;
-      inserted += rows.length;
+      })));
     }
-    return { ok: true, chunks: inserted };
+    if (!rows.length) throw new Error("Kursi nuk ka përmbajtje për indeksim.");
+    const { data: count, error: replacementError } = await supabaseAdmin.rpc("replace_course_knowledge", { p_course: data.courseId, p_rows: rows });
+    if (replacementError) throw replacementError;
+    return { ok: true, chunks: count };
   });

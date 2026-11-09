@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertStaff } from "./staff-access";
 
 // Trigger events emitted by the app; automation rules match by trigger_event.
 export type AutomationEvent =
@@ -20,6 +21,7 @@ export const runAutomation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => runSchema.parse(d))
   .handler(async ({ data, context }) => {
+    await assertStaff(context.supabase, context.userId);
     const { data: rules, error } = await context.supabase
       .from("automation_rules")
       .select("id,name,action_type,action_config")

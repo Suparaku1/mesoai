@@ -15,12 +15,14 @@ const STORAGE_KEY = "uendi-locale";
 import { academicSq, academicEn, academicIt, academicDe } from "./dicts/academic";
 import { adminSq, adminEn, adminIt, adminDe } from "./dicts/admin";
 import { commSq, commEn, commIt, commDe } from "./dicts/comm";
+import { tutorHistorySq, tutorHistoryEn, tutorHistoryIt, tutorHistoryDe } from "./dicts/tutor-history";
+import { parentAccessSq, parentAccessEn, parentAccessIt, parentAccessDe } from "./dicts/parent-access";
 
 /** Fjalori bazë. Shqipja është burimi; gjuhët e tjera bien mbrapsht te shqipja. */
 const coreSq = {
-  "app.school": "Shkolla Profesionale Elbasan",
-  "app.schoolShort": "Shkolla Profesionale",
-  "app.subtitle": "Elbasan · Uendi Platform",
+  "app.school": "Shkolla Teknike Elektrike “Gjergj Canco”",
+  "app.schoolShort": "Shkolla “Gjergj Canco”",
+  "app.subtitle": "Uendi Platform",
   "app.name": "Uendi Platform",
   "action.signOut": "Dil",
   "action.menu": "Hap menynë",
@@ -150,7 +152,7 @@ const coreSq = {
   "land.footer.links": "Lidhje",
   "land.footer.enter": "Hyr në platformë",
   "land.footer.contact": "Kontakt",
-  "land.footer.location": "Elbasan, Shqipëri",
+  "land.footer.location": "Tiranë, Shqipëri",
   "land.footer.office": "Sekretaria e shkollës",
   "land.footer.credit": "Ky website është krijuar nga",
 
@@ -265,9 +267,9 @@ const coreSq = {
 };
 
 const coreEn: Record<string, string> = {
-  "app.school": "Elbasan Vocational School",
+  "app.school": "“Gjergj Canco” Electrical Technical School",
   "app.schoolShort": "Vocational School",
-  "app.subtitle": "Elbasan · Uendi Platform",
+  "app.subtitle": "Uendi Platform",
   "action.signOut": "Sign out",
   "action.menu": "Open menu",
   "role.teacher": "Teacher",
@@ -395,7 +397,7 @@ const coreEn: Record<string, string> = {
   "land.footer.links": "Links",
   "land.footer.enter": "Enter the platform",
   "land.footer.contact": "Contact",
-  "land.footer.location": "Elbasan, Albania",
+  "land.footer.location": "Tirana, Albania",
   "land.footer.office": "School office",
   "land.footer.credit": "This website was created by",
 
@@ -503,9 +505,9 @@ const coreEn: Record<string, string> = {
 };
 
 const coreIt: Record<string, string> = {
-  "app.school": "Scuola Professionale Elbasan",
+  "app.school": "Scuola Tecnica Elettrica “Gjergj Canco”",
   "app.schoolShort": "Scuola Professionale",
-  "app.subtitle": "Elbasan · Uendi Platform",
+  "app.subtitle": "Uendi Platform",
   "action.signOut": "Esci",
   "action.menu": "Apri il menu",
   "role.teacher": "Docente",
@@ -633,7 +635,7 @@ const coreIt: Record<string, string> = {
   "land.footer.links": "Collegamenti",
   "land.footer.enter": "Entra nella piattaforma",
   "land.footer.contact": "Contatti",
-  "land.footer.location": "Elbasan, Albania",
+  "land.footer.location": "Tirana, Albania",
   "land.footer.office": "Segreteria della scuola",
   "land.footer.credit": "Questo sito è stato creato da",
 
@@ -741,9 +743,9 @@ const coreIt: Record<string, string> = {
 };
 
 const coreDe: Record<string, string> = {
-  "app.school": "Berufsschule Elbasan",
+  "app.school": "Elektrotechnische Fachschule „Gjergj Canco“",
   "app.schoolShort": "Berufsschule",
-  "app.subtitle": "Elbasan · Uendi Platform",
+  "app.subtitle": "Uendi Platform",
   "action.signOut": "Abmelden",
   "action.menu": "Menü öffnen",
   "role.teacher": "Lehrer",
@@ -871,7 +873,7 @@ const coreDe: Record<string, string> = {
   "land.footer.links": "Links",
   "land.footer.enter": "Zur Plattform",
   "land.footer.contact": "Kontakt",
-  "land.footer.location": "Elbasan, Albanien",
+  "land.footer.location": "Tirana, Albanien",
   "land.footer.office": "Schulsekretariat",
   "land.footer.credit": "Diese Website wurde erstellt von",
 
@@ -978,10 +980,10 @@ const coreDe: Record<string, string> = {
   "erp.status.cancelled": "Storniert",
 };
 
-const sq = { ...coreSq, ...academicSq, ...adminSq, ...commSq };
-const en = { ...coreEn, ...academicEn, ...adminEn, ...commEn };
-const it = { ...coreIt, ...academicIt, ...adminIt, ...commIt };
-const de = { ...coreDe, ...academicDe, ...adminDe, ...commDe };
+const sq = { ...coreSq, ...academicSq, ...adminSq, ...commSq, ...tutorHistorySq, ...parentAccessSq };
+const en = { ...coreEn, ...academicEn, ...adminEn, ...commEn, ...tutorHistoryEn, ...parentAccessEn };
+const it = { ...coreIt, ...academicIt, ...adminIt, ...commIt, ...tutorHistoryIt, ...parentAccessIt };
+const de = { ...coreDe, ...academicDe, ...adminDe, ...commDe, ...tutorHistoryDe, ...parentAccessDe };
 
 const dict: Record<Locale, Partial<Record<keyof typeof sq, string>>> = { sq, en, it, de };
 

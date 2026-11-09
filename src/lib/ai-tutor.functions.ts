@@ -17,9 +17,12 @@ const ChatInput = z.object({
 export const askTutor = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => ChatInput.parse(input))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("Mungon LOVABLE_API_KEY");
+    const { data: quota, error } = await context.supabase.rpc("reserve_tutor_request", {});
+    if (error) throw new Error(error.message);
+    if (!(quota as { allowed: boolean }).allowed) throw new Error("Kufiri ditor prej 50 pyetjesh u arrit. Provoni nesër.");
 
     const { generateText } = await import("ai");
     const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
@@ -31,9 +34,10 @@ export const askTutor = createServerFn({ method: "POST" })
         {
           role: "system",
           content:
-            "Ti je një Tutor AI në SHQIP për nxënësit e Shkollës Profesionale Elbasan (drejtimet: Elektroteknike dhe TIK). Përgjigju qartë, shkurt dhe me shembuj. Ndihmoji të kuptojnë konceptet pa u dhënë direkt përgjigjet e testeve. Përdor formatim Markdown (lista, theksim, kod) kur ndihmon.",
+            "Ti je një Tutor AI në SHQIP për nxënësit e Shkollës Teknike Elektrike “Gjergj Canco” (drejtimet: Elektroteknike dhe TIK). Përgjigju qartë, shkurt dhe me shembuj. Ndihmoji të kuptojnë konceptet pa u dhënë direkt përgjigjet e testeve. Përdor formatim Markdown (lista, theksim, kod) kur ndihmon.",
         },
-        ...data.messages,
+        // Only caller-authored user turns are trusted; client-supplied assistant turns are dropped.
+        ...data.messages.filter((m) => m.role === "user").map((m) => ({ role: "user" as const, content: m.content })),
       ],
     });
 

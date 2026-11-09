@@ -29,7 +29,7 @@ function Page() {
     queryKey: ["role-sched", user.id],
     queryFn: async () => {
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
-      const roles = (data ?? []).map((r: any) => r.role);
+      const roles = (data ?? []).map((r) => r.role);
       return { canEdit: roles.includes("teacher") || roles.includes("admin") };
     },
   });
@@ -43,15 +43,15 @@ function Page() {
         return data ?? [];
       }
       const { data } = await supabase.from("enrollments").select("courses(id,title)").eq("student_id", user.id).eq("status", "approved");
-      return (data ?? []).map((e: any) => e.courses).filter(Boolean);
+      return (data ?? []).map((e) => e.courses).filter(Boolean);
     },
   });
 
   const { data: items } = useQuery({
-    queryKey: ["sched", courses?.map((c: any) => c.id).join(",")],
+    queryKey: ["sched", courses?.map((c) => c.id).join(",")],
     enabled: !!courses?.length,
     queryFn: async () => {
-      const ids = (courses ?? []).map((c: any) => c.id);
+      const ids = (courses ?? []).map((c) => c.id);
       const { data } = await supabase.from("schedule").select("*, courses(title)").in("course_id", ids).order("day_of_week").order("start_time");
       return data ?? [];
     },
@@ -64,7 +64,7 @@ function Page() {
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["sched"] }); toast.success(t("sched.added")); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const del = useMutation({
@@ -72,7 +72,7 @@ function Page() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["sched"] }),
   });
 
-  const byDay = (d: number) => (items ?? []).filter((i: any) => i.day_of_week === d);
+  const byDay = (d: number) => (items ?? []).filter((i) => i.day_of_week === d);
 
   return (
     <div className="container mx-auto p-4 sm:p-6 space-y-4">
@@ -84,7 +84,7 @@ function Page() {
           <CardContent className="grid sm:grid-cols-6 gap-2">
             <Select value={form.course_id} onValueChange={(v) => setForm({ ...form, course_id: v })}>
               <SelectTrigger className="sm:col-span-2"><SelectValue placeholder={t("sched.coursePlaceholder")} /></SelectTrigger>
-              <SelectContent>{(courses ?? []).map((c: any) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}</SelectContent>
+              <SelectContent>{(courses ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}</SelectContent>
             </Select>
             <Select value={String(form.day_of_week)} onValueChange={(v) => setForm({ ...form, day_of_week: Number(v) })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
@@ -103,7 +103,7 @@ function Page() {
           <Card key={i}>
             <CardHeader><CardTitle className="text-base">{d}</CardTitle></CardHeader>
             <CardContent className="space-y-1.5">
-              {byDay(i + 1).map((it: any) => (
+              {byDay(i + 1).map((it) => (
                 <div key={it.id} className="flex items-center justify-between text-sm border-b border-border/40 pb-1">
                   <div>
                     <div className="font-medium">{it.courses?.title}</div>

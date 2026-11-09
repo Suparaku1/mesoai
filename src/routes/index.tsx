@@ -4,29 +4,29 @@ import {
   BookOpen, Sparkles, ShieldCheck, FileText, BarChart3, GraduationCap,
   Cpu, Wrench, Mail, MapPin, Phone, ChevronDown, Users, Bot,
 } from "lucide-react";
-import logo from "@/assets/logo.jpeg";
+import logo from "@/assets/logo.png";
 import { useI18n } from "@/i18n";
 
 const SITE = "Uendi Platform";
-const SCHOOL = "Shkolla Profesionale Elbasan";
+const SCHOOL = "Shkolla Teknike Elektrike “Gjergj Canco”";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Shkolla Profesionale Elbasan — Uendi Platform" },
+      { title: "Shkolla Teknike Elektrike “Gjergj Canco” — Uendi Platform" },
       {
         name: "description",
         content:
-          "Platforma zyrtare e mësimit për Shkollën Profesionale Elbasan: kurse Elektroteknike dhe TIK, mësim me AI mbi librin PDF, teste me notim 4–10, ndjekje nga prindi dhe certifikatë.",
+          "Platforma zyrtare e mësimit për Shkollën Teknike Elektrike “Gjergj Canco”: kurse Elektroteknike dhe TIK, mësim me AI mbi librin PDF, teste me notim 4–10, ndjekje nga prindi dhe certifikatë.",
       },
-      { property: "og:title", content: "Shkolla Profesionale Elbasan — Uendi Platform" },
+      { property: "og:title", content: "Shkolla Teknike Elektrike “Gjergj Canco” — Uendi Platform" },
       {
         property: "og:description",
         content: "Mësim digjital me AI për Elektroteknikë dhe TIK. Kurse, teste, progres, certifikata.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Shkolla Profesionale Elbasan — Uendi Platform" },
+      { name: "twitter:title", content: "Shkolla Teknike Elektrike “Gjergj Canco” — Uendi Platform" },
       {
         name: "twitter:description",
         content: "Mësim digjital me AI për Elektroteknikë dhe TIK.",
@@ -42,9 +42,9 @@ export const Route = createFileRoute("/")({
           name: SCHOOL,
           alternateName: SITE,
           description:
-            "Shkollë profesionale në Elbasan me drejtimet Elektroteknikë dhe Teknologji Informacioni e Komunikimi.",
-          address: { "@type": "PostalAddress", addressLocality: "Elbasan", addressCountry: "AL" },
-          areaServed: "Elbasan, Shqipëri",
+            "Shkollë teknike elektrike me drejtimet Elektroteknikë dhe Teknologji Informacioni e Komunikimi.",
+          address: { "@type": "PostalAddress", addressLocality: "Tiranë", addressCountry: "AL" },
+          areaServed: "Tiranë, Shqipëri",
         }),
       },
     ],
@@ -94,8 +94,8 @@ function Landing() {
               <Sparkles className="size-3.5" /> {t("land.badge")}
             </div>
             <h1 className="text-[2rem] leading-[1.1] sm:text-6xl font-bold tracking-tight text-balance">
-              Shkolla Profesionale{" "}
-              <span className="bg-clip-text text-transparent gradient-hero">Elbasan</span>
+              Shkolla Teknike Elektrike{" "}
+              <span className="bg-clip-text text-transparent gradient-hero">“Gjergj Canco”</span>
             </h1>
             <p className="mt-5 sm:mt-6 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
               {t("land.hero.sub")}

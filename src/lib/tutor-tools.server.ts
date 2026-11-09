@@ -13,8 +13,8 @@ export function createTutorTools(supabase: Client, userId: string) {
       .eq("student_id", userId)
       .eq("status", "approved");
     return (data ?? [])
-      .map((r: any) => r.courses)
-      .filter(Boolean) as Array<{ id: string; title: string; description: string | null }>;
+      .map((r) => r.courses)
+      .filter(Boolean) as unknown as Array<{ id: string; title: string; description: string | null }>;
   }
 
   async function resolveCourse(courseTitle?: string | null) {
@@ -55,12 +55,12 @@ export function createTutorTools(supabase: Client, userId: string) {
           .from("topic_progress")
           .select("topic_id")
           .eq("student_id", userId);
-        const done = new Set((prog ?? []).map((p: any) => p.topic_id));
-        const next = list.find((t: any) => !done.has(t.id));
+        const done = new Set((prog ?? []).map((p) => p.topic_id));
+        const next = list.find((t) => !done.has(t.id));
         return {
           kursi: course.title,
           temaTotale: list.length,
-          temaTePerfunduara: list.filter((t: any) => done.has(t.id)).length,
+          temaTePerfunduara: list.filter((t) => done.has(t.id)).length,
           temaERadhes: next?.title ?? "Të gjitha temat janë përfunduar",
         };
       },
@@ -79,13 +79,13 @@ export function createTutorTools(supabase: Client, userId: string) {
           .select("id,title")
           .eq("course_id", course.id)
           .is("deleted_at", null);
-        const topicIds = (topics ?? []).map((t: any) => t.id);
-        const titleById = new Map((topics ?? []).map((t: any) => [t.id, t.title]));
+        const topicIds = (topics ?? []).map((t) => t.id);
+        const titleById = new Map((topics ?? []).map((t) => [t.id, t.title]));
         const { data: quizzes } = topicIds.length
           ? await supabase.from("quizzes").select("id,topic_id").in("topic_id", topicIds)
           : { data: [] as any[] };
-        const quizIds = (quizzes ?? []).map((q: any) => q.id);
-        const topicByQuiz = new Map((quizzes ?? []).map((q: any) => [q.id, q.topic_id]));
+        const quizIds = (quizzes ?? []).map((q) => q.id);
+        const topicByQuiz = new Map((quizzes ?? []).map((q) => [q.id, q.topic_id]));
         const { data: attempts } = quizIds.length
           ? await supabase
               .from("quiz_attempts")
@@ -101,7 +101,7 @@ export function createTutorTools(supabase: Client, userId: string) {
           .maybeSingle();
         return {
           kursi: course.title,
-          testime: (attempts ?? []).map((a: any) => ({
+          testime: (attempts ?? []).map((a) => ({
             tema: titleById.get(topicByQuiz.get(a.quiz_id)) ?? "—",
             nota: a.final_grade ?? a.grade,
             neShqyrtim: a.needs_review && !a.reviewed,
@@ -125,14 +125,14 @@ export function createTutorTools(supabase: Client, userId: string) {
           .select("id,title")
           .eq("course_id", course.id)
           .is("deleted_at", null);
-        const topicIds = (topics ?? []).map((t: any) => t.id);
-        const titleById = new Map((topics ?? []).map((t: any) => [t.id, t.title]));
+        const topicIds = (topics ?? []).map((t) => t.id);
+        const titleById = new Map((topics ?? []).map((t) => [t.id, t.title]));
         if (!topicIds.length) return { kursi: course.title, detyra: [] };
         const { data: hw } = await supabase
           .from("homework")
           .select("id,instructions,due_date,topic_id")
           .in("topic_id", topicIds);
-        const hwIds = (hw ?? []).map((h: any) => h.id);
+        const hwIds = (hw ?? []).map((h) => h.id);
         const { data: subs } = hwIds.length
           ? await supabase
               .from("homework_submissions")
@@ -140,12 +140,12 @@ export function createTutorTools(supabase: Client, userId: string) {
               .eq("student_id", userId)
               .in("homework_id", hwIds)
           : { data: [] as any[] };
-        const done = new Set((subs ?? []).map((s: any) => s.homework_id));
+        const done = new Set((subs ?? []).map((s) => s.homework_id));
         return {
           kursi: course.title,
           detyra: (hw ?? [])
-            .filter((h: any) => !done.has(h.id))
-            .map((h: any) => ({
+            .filter((h) => !done.has(h.id))
+            .map((h) => ({
               tema: titleById.get(h.topic_id) ?? "—",
               udhezime: h.instructions,
               afati: h.due_date,

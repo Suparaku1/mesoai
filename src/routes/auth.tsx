@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,6 +42,25 @@ function AuthPage() {
     navigate({ to: "/dashboard" });
   }
 
+  // Pas kthimit nga Google: kur sesioni është gati, dërgo te faqja e synuar.
+  useEffect(() => {
+    let done = false;
+    const go = () => {
+      if (done) return;
+      done = true;
+      const saved = safeNext(sessionStorage.getItem("auth_next") ?? undefined);
+      sessionStorage.removeItem("auth_next");
+      if (saved) window.location.href = saved;
+      else navigate({ to: "/dashboard" });
+    };
+    supabase.auth.getSession().then(({ data }) => { if (data.session) go(); });
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session && sessionStorage.getItem("auth_next") !== null) go();
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [navigate]);
+
+
 
   // Login state
   const [loginEmail, setLoginEmail] = useState("");
@@ -55,6 +75,7 @@ function AuthPage() {
   const [drejtimi, setDrejtimi] = useState<string>("");
   const [klasa, setKlasa] = useState<string>("");
   const [paralelja, setParalelja] = useState<string>("");
+  const [studentFullName, setStudentFullName] = useState("");
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -66,8 +87,27 @@ function AuthPage() {
     goAfterAuth();
   }
 
+  async function handleGoogle() {
+    if (next) sessionStorage.setItem("auth_next", next);
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" });
+    if (result.error) return toast.error(t("auth.loginFailed"));
+    if (result.redirected) return;
+    sessionStorage.removeItem("auth_next");
+    goAfterAuth();
+  }
+
+  async function handleForgot() {
+    if (!loginEmail) return toast.error(t("auth.email"));
+    const { error } = await supabase.auth.resetPasswordForEmail(loginEmail, {
+      redirectTo: window.location.origin + "/reset-password",
+    });
+    if (error) return toast.error(error.message);
+    toast.success(t("auth.resetSent"));
+  }
+
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
+    if (role === "parent" && (studentFullName.trim().split(/\s+/).length < 2)) return toast.error(t("parentAccess.legalName"));
     if (role === "student" && (!drejtimi || !klasa || !paralelja)) {
       return toast.error(t("auth.fillStudent"));
     }
@@ -81,6 +121,7 @@ function AuthPage() {
           first_name: firstName,
           last_name: lastName,
           role,
+          student_full_name: role === "parent" ? studentFullName.trim() : undefined,
           drejtimi: role === "student" ? drejtimi : "",
           klasa: role === "student" ? klasa : "",
           paralelja: role === "student" ? paralelja : "",
@@ -112,6 +153,14 @@ function AuthPage() {
               <TabsTrigger value="register">{t("auth.register")}</TabsTrigger>
             </TabsList>
 
+            <Button type="button" variant="outline" className="w-full mb-3" onClick={handleGoogle} disabled={loading}>
+              <svg className="size-4 mr-2" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.35 11.1H12v2.9h5.35c-.23 1.5-1.68 4.4-5.35 4.4-3.22 0-5.85-2.67-5.85-5.95S8.78 6.5 12 6.5c1.83 0 3.06.78 3.76 1.45l2.57-2.47C16.68 3.94 14.55 3 12 3 7.03 3 3 7.03 3 12s4.03 9 9 9c5.2 0 8.64-3.65 8.64-8.8 0-.6-.07-1.05-.29-1.1z"/></svg>
+              {t("auth.google")}
+            </Button>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+              <div className="h-px flex-1 bg-border" />{t("auth.or")}<div className="h-px flex-1 bg-border" />
+            </div>
+
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-3">
                 <div className="space-y-1.5">
@@ -123,15 +172,18 @@ function AuthPage() {
                   <Input id="lp" type="password" required value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>{loading ? t("auth.signingIn") : t("auth.login")}</Button>
+                <button type="button" onClick={handleForgot} className="text-sm text-primary hover:underline w-full text-center">
+                  {t("auth.forgot")}
+                </button>
               </form>
             </TabsContent>
 
             <TabsContent value="register">
               <form onSubmit={handleRegister} className="space-y-3">
                 <div className="grid grid-cols-3 gap-2">
-                  <Button type="button" variant={role === "student" ? "default" : "outline"} onClick={() => setRole("student" as any)}>{t("role.student")}</Button>
-                  <Button type="button" variant={role === "teacher" ? "default" : "outline"} onClick={() => setRole("teacher" as any)}>{t("role.teacher")}</Button>
-                  <Button type="button" variant={(role as any) === "parent" ? "default" : "outline"} onClick={() => setRole("parent" as any)}>{t("role.parent")}</Button>
+                  <Button type="button" variant={role === "student" ? "default" : "outline"} onClick={() => setRole("student")}>{t("role.student")}</Button>
+                  <Button type="button" variant={role === "teacher" ? "default" : "outline"} onClick={() => setRole("teacher")}>{t("role.teacher")}</Button>
+                  <Button type="button" variant={role === "parent" ? "default" : "outline"} onClick={() => setRole("parent")}>{t("role.parent")}</Button>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1.5">
@@ -143,6 +195,10 @@ function AuthPage() {
                     <Input id="ln" required value={lastName} onChange={(e) => setLastName(e.target.value)} />
                   </div>
                 </div>
+                {role === "parent" && <div className="space-y-1.5">
+                  <Label htmlFor="student-full-name">{t("parentAccess.studentName")}</Label>
+                  <Input id="student-full-name" required maxLength={200} value={studentFullName} onChange={(e) => setStudentFullName(e.target.value)} placeholder={t("parentAccess.legalName")} />
+                </div>}
                 {role === "student" && (
                   <>
                     <div className="space-y-1.5">

@@ -2,9 +2,14 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRole } from "@/hooks/use-role";
-import { CalendarClock, AlertCircle, CheckCircle2 } from "lucide-react";
+import { CalendarClock, AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { pageMeta } from "@/lib/seo";
 import { useI18n } from "@/i18n";
+import { syncDeadlinesToCalendar } from "@/lib/calendar.functions";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({ meta: pageMeta("Kalendari", "Afatet e detyrave, provimet dhe ngjarjet e kurseve në një pamje të vetme.") }),
@@ -57,9 +62,9 @@ function CalendarPage() {
       const { data: subs } = hwIds.length
         ? await supabase.from("homework_submissions").select("homework_id").eq("student_id", user.id).in("homework_id", hwIds)
         : { data: [] as any[] };
-      const submittedSet = new Set((subs ?? []).map((s: any) => s.homework_id));
+      const submittedSet = new Set((subs ?? []).map((s) => s.homework_id));
       const topicMap = new Map((topics ?? []).map((t) => [t.id, t]));
-      const courseMap = new Map((enrolls ?? []).map((e: any) => [e.course_id, e.courses]));
+      const courseMap = new Map((enrolls ?? []).map((e) => [e.course_id, e.courses]));
       return (hw ?? []).map((h) => ({
         ...h,
         topic: topicMap.get(h.topic_id),
@@ -69,14 +74,35 @@ function CalendarPage() {
     },
   });
 
-  const sorted = [...(data ?? [])].sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+  const sync = useServerFn(syncDeadlinesToCalendar);
+  const [syncing, setSyncing] = useState(false);
+  async function onSync() {
+    setSyncing(true);
+    try {
+      const r = await sync();
+      toast.success(t("cal.synced", r));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  const sorted = [...(data ?? [])].sort((a, b) => new Date(a.due_date ?? 0).getTime() - new Date(b.due_date ?? 0).getTime());
   const now = Date.now();
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2"><CalendarClock className="size-6" /> {t("cal.title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("cal.subtitle")}</p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2"><CalendarClock className="size-6" /> {t("cal.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("cal.subtitle")}</p>
+        </div>
+        {(primary === "teacher" || primary === "admin") && (
+          <Button variant="outline" size="sm" disabled={syncing} onClick={onSync}>
+            <RefreshCw className={`size-4 mr-1 ${syncing ? "animate-spin" : ""}`} /> {t("cal.sync")}
+          </Button>
+        )}
       </div>
       {isLoading && <div className="text-muted-foreground">{t("common.loading")}</div>}
       {!isLoading && !sorted.length && <div className="card-soft p-10 text-center text-muted-foreground">{t("cal.empty")}</div>}
@@ -91,7 +117,7 @@ function CalendarPage() {
               params={{ id: h.topic_id }}
               className={`card-soft p-4 flex items-center gap-3 hover:border-primary/50 transition ${overdue ? "border-destructive/40" : ""}`}
             >
-              <div className={`size-10 rounded-lg flex items-center justify-center ${h.submitted ? "bg-success/15 text-success" : overdue ? "bg-destructive/15 text-destructive" : "bg-primary/10 text-primary"}`}>
+              <div className={`size-10 shrink-0 rounded-lg flex items-center justify-center ${h.submitted ? "bg-success/15 text-success" : overdue ? "bg-destructive/15 text-destructive" : "bg-primary/10 text-primary"}`}>
                 {h.submitted ? <CheckCircle2 className="size-5" /> : overdue ? <AlertCircle className="size-5" /> : <CalendarClock className="size-5" />}
               </div>
               <div className="flex-1 min-w-0">
@@ -99,7 +125,7 @@ function CalendarPage() {
                 <div className="font-medium truncate">{(h.topic as any)?.title}</div>
                 <div className="text-sm text-muted-foreground line-clamp-1">{h.instructions}</div>
               </div>
-              <div className="text-right text-xs">
+              <div className="w-24 shrink-0 text-right text-xs">
                 <div className={overdue ? "text-destructive font-semibold" : "text-foreground"}>
                   {new Date(h.due_date).toLocaleDateString("sq-AL", { day: "2-digit", month: "short", year: "numeric" })}
                 </div>

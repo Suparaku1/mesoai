@@ -112,6 +112,7 @@ export type Database = {
           entity_id: string | null
           id: string
           metadata: Json | null
+          module: string | null
           user_id: string | null
         }
         Insert: {
@@ -121,6 +122,7 @@ export type Database = {
           entity_id?: string | null
           id?: string
           metadata?: Json | null
+          module?: string | null
           user_id?: string | null
         }
         Update: {
@@ -130,6 +132,7 @@ export type Database = {
           entity_id?: string | null
           id?: string
           metadata?: Json | null
+          module?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -671,6 +674,7 @@ export type Database = {
       }
       exams: {
         Row: {
+          calendar_event_id: string | null
           course_id: string
           created_at: string
           duration_min: number
@@ -681,6 +685,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          calendar_event_id?: string | null
           course_id: string
           created_at?: string
           duration_min?: number
@@ -691,6 +696,7 @@ export type Database = {
           title: string
         }
         Update: {
+          calendar_event_id?: string | null
           course_id?: string
           created_at?: string
           duration_min?: number
@@ -719,6 +725,7 @@ export type Database = {
       }
       homework: {
         Row: {
+          calendar_event_id: string | null
           created_at: string
           due_date: string | null
           id: string
@@ -726,6 +733,7 @@ export type Database = {
           topic_id: string
         }
         Insert: {
+          calendar_event_id?: string | null
           created_at?: string
           due_date?: string | null
           id?: string
@@ -733,6 +741,7 @@ export type Database = {
           topic_id: string
         }
         Update: {
+          calendar_event_id?: string | null
           created_at?: string
           due_date?: string | null
           id?: string
@@ -979,6 +988,54 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      parent_access_requests: {
+        Row: {
+          created_at: string
+          id: string
+          parent_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          student_full_name: string
+          student_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          parent_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          student_full_name: string
+          student_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          parent_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          student_full_name?: string
+          student_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_access_requests_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parent_access_requests_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       parent_links: {
         Row: {
@@ -1465,6 +1522,83 @@ export type Database = {
           },
         ]
       }
+      tutor_daily_usage: {
+        Row: {
+          requests: number
+          usage_date: string
+          user_id: string
+        }
+        Insert: {
+          requests?: number
+          usage_date: string
+          user_id: string
+        }
+        Update: {
+          requests?: number
+          usage_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tutor_daily_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tutor_threads: {
+        Row: {
+          course_id: string | null
+          created_at: string
+          id: string
+          messages: Json
+          request_started_at: string | null
+          request_token: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          messages?: Json
+          request_started_at?: string | null
+          request_token?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          messages?: Json
+          request_started_at?: string | null
+          request_token?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tutor_threads_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tutor_threads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_preferences: {
         Row: {
           onboarding_dismissed: boolean
@@ -1506,9 +1640,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_view_course: { Args: { _course: string }; Returns: boolean }
+      create_parent_access_request: {
+        Args: { p_name: string }
+        Returns: string
+      }
       current_role: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      finish_tutor_request: {
+        Args: { p_assistant?: Json; p_thread_id: string; p_token: string }
+        Returns: boolean
       }
       has_role: {
         Args: {
@@ -1530,6 +1673,23 @@ export type Database = {
           similarity: number
           topic_id: string
         }[]
+      }
+      parent_academic_overview: { Args: never; Returns: Json }
+      replace_course_knowledge: {
+        Args: { p_course: string; p_rows: Json }
+        Returns: number
+      }
+      replace_generated_course: {
+        Args: { p_course: string; p_topics: Json }
+        Returns: number
+      }
+      reserve_tutor_request: {
+        Args: { p_message?: Json; p_thread_id?: string }
+        Returns: Json
+      }
+      review_parent_access: {
+        Args: { p_approve: boolean; p_request: string; p_student: string }
+        Returns: undefined
       }
     }
     Enums: {

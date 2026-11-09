@@ -99,8 +99,8 @@ function TeacherHomework({ topicId, courseId, homework, qc }: {
               });
               if (r.id) toast.success(t("hw.addedToCalendar"));
               else toast.error(t("hw.notAddedToCalendar"));
-            } catch (e: any) {
-              toast.error(e?.message ?? t("hw.calendarError"));
+            } catch (e) {
+              toast.error((e instanceof Error ? e.message : t("hw.calendarError")));
             } finally {
               setAddingCal(false);
             }

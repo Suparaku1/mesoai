@@ -21,8 +21,8 @@ export function CourseHeader({
         </div>
       ) : null}
       <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold">{title}</h1>
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold break-words">{title}</h1>
           {subtitle ? <p className="text-sm text-muted-foreground">{subtitle}</p> : null}
         </div>
         {actions ? <div className="flex gap-2 flex-wrap">{actions}</div> : null}

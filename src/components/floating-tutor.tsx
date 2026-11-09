@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useRouterState } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { askTutor } from "@/lib/ai-tutor.functions";
@@ -6,7 +7,7 @@ import { transcribeAudio } from "@/lib/stt.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Send, X, Mic, MicOff, Volume2, VolumeX, Loader2, Sparkles } from "lucide-react";
+import { MessageCircle, Send, X, Mic, MicOff, Volume2, VolumeX, Loader2, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,7 @@ type Msg = { role: "user" | "assistant"; content: string };
 
 export function FloatingTutor() {
   const { t } = useI18n();
+  const onTutorPage = useRouterState({ select: state => state.location.pathname.startsWith("/tutor") });
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([
     { role: "assistant", content: t("ui.tutorGreeting") },
@@ -42,7 +44,7 @@ export function FloatingTutor() {
         window.speechSynthesis.speak(u);
       }
     },
-    onError: (e: any) => toast.error(e?.message ?? t("ui.tutorError")),
+    onError: (e: Error) => toast.error(e?.message ?? t("ui.tutorError")),
   });
 
   useEffect(() => {
@@ -81,8 +83,8 @@ export function FloatingTutor() {
           const res = await stt({ data: { audioBase64: b64, mimeType: "audio/webm" } });
           if (res.text) send(res.text);
           else toast.error(t("ui.tutorNoText"));
-        } catch (e: any) {
-          toast.error(e?.message ?? t("ui.tutorTranscribeFail"));
+        } catch (e) {
+          toast.error((e instanceof Error ? e.message : t("ui.tutorTranscribeFail")));
         } finally {
           setTranscribing(false);
         }
@@ -104,6 +106,8 @@ export function FloatingTutor() {
       startRecording();
     }
   }
+
+  if (onTutorPage) return null;
 
   return (
     <>
@@ -130,12 +134,12 @@ export function FloatingTutor() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-5 right-5 z-50 w-[min(380px,calc(100vw-2rem))] h-[min(560px,calc(100vh-2rem))] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-5 right-5 z-50 w-[min(380px,calc(100vw-2rem))] h-[min(560px,calc(100dvh-2rem))] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           >
             <div className="px-4 py-3 border-b border-border bg-primary/5 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="size-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
-                  <Sparkles className="size-4" />
+                  <GraduationCap className="size-4" />
                 </div>
                 <div>
                   <div className="text-sm font-semibold">{t("ui.tutorTitle")}</div>
@@ -146,7 +150,7 @@ export function FloatingTutor() {
                 <Button size="icon" variant="ghost" className="size-8" onClick={() => setTtsOn(!ttsOn)} title={ttsOn ? t("ui.tutorMuteOn") : t("ui.tutorMuteOff")}>
                   {ttsOn ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
                 </Button>
-                <Button size="icon" variant="ghost" className="size-8" onClick={() => setOpen(false)}>
+                <Button size="icon" variant="ghost" className="size-8" aria-label={t("crm2.cancel")} onClick={() => setOpen(false)}>
                   <X className="size-4" />
                 </Button>
               </div>

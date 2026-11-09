@@ -12,7 +12,7 @@ import { pageMeta } from "@/lib/seo";
 import { useI18n } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/exams")({
-  head: () => ({ meta: pageMeta("Provimet", "Orari dhe rezultatet e provimeve për nxënësit e Shkollës Profesionale Elbasan.") }),
+  head: () => ({ meta: pageMeta("Provimet", "Orari dhe rezultatet e provimeve për nxënësit e Shkollës Teknike Elektrike “Gjergj Canco”.") }),
   component: Page,
 });
 
@@ -26,7 +26,7 @@ function Page() {
     queryKey: ["role-ex", user.id],
     queryFn: async () => {
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
-      const roles = (data ?? []).map((r: any) => r.role);
+      const roles = (data ?? []).map((r) => r.role);
       return { canEdit: roles.includes("teacher") || roles.includes("admin") };
     },
   });
@@ -40,15 +40,15 @@ function Page() {
         return data ?? [];
       }
       const { data } = await supabase.from("enrollments").select("courses(id,title)").eq("student_id", user.id).eq("status", "approved");
-      return (data ?? []).map((e: any) => e.courses).filter(Boolean);
+      return (data ?? []).map((e) => e.courses).filter(Boolean);
     },
   });
 
   const { data: items } = useQuery({
-    queryKey: ["exams", courses?.map((c: any) => c.id).join(",")],
+    queryKey: ["exams", courses?.map((c) => c.id).join(",")],
     enabled: !!courses?.length,
     queryFn: async () => {
-      const ids = (courses ?? []).map((c: any) => c.id);
+      const ids = (courses ?? []).map((c) => c.id);
       const { data } = await supabase.from("exams").select("*, courses(title)").in("course_id", ids).order("scheduled_at");
       return data ?? [];
     },
@@ -61,7 +61,7 @@ function Page() {
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["exams"] }); toast.success(t("exam.added")); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const del = useMutation({
@@ -79,7 +79,7 @@ function Page() {
           <CardContent className="grid sm:grid-cols-6 gap-2">
             <Select value={form.course_id} onValueChange={(v) => setForm({ ...form, course_id: v })}>
               <SelectTrigger className="sm:col-span-2"><SelectValue placeholder={t("exam.coursePlaceholder")} /></SelectTrigger>
-              <SelectContent>{(courses ?? []).map((c: any) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}</SelectContent>
+              <SelectContent>{(courses ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}</SelectContent>
             </Select>
             <Input className="sm:col-span-2" placeholder={t("exam.titlePlaceholder")} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
             <Input type="datetime-local" value={form.scheduled_at} onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })} />
@@ -91,7 +91,7 @@ function Page() {
       )}
 
       <div className="space-y-2">
-        {(items ?? []).map((it: any) => (
+        {(items ?? []).map((it) => (
           <Card key={it.id}><CardContent className="p-4 flex items-center justify-between">
             <div>
               <div className="font-medium">{it.title} <span className="text-muted-foreground">· {it.courses?.title}</span></div>

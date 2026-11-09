@@ -36,7 +36,7 @@ async function logDelivery(row: {
 }) {
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("email_log").insert({
+    const { error } = await supabaseAdmin.from("email_log").insert({
       recipient: row.recipient,
       subject: row.subject,
       event: row.event ?? null,
@@ -47,8 +47,9 @@ async function logDelivery(row: {
       provider_id: row.provider_id ?? null,
       body: row.body ?? null,
     });
-  } catch {
-    /* logging is best-effort */
+    if (error) console.error("[email_log]", error.message);
+  } catch (error) {
+    console.error("[email_log] unavailable", error instanceof Error ? error.message : "unknown");
   }
 }
 
@@ -75,8 +76,11 @@ export async function sendMail(to: string, subject: string, html: string, event?
 
   const raw = buildRaw(to, subject, html);
   let lastError = "";
+  let attempts = 0;
+  let status = "failed";
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    attempts = attempt;
     try {
       const res = await fetch(`${GATEWAY}/users/me/messages/send`, {
         method: "POST",
@@ -104,10 +108,14 @@ export async function sendMail(to: string, subject: string, html: string, event?
 
       const text = await res.text();
       lastError = `Gmail dërgim dështoi (${res.status}): ${text.slice(0, 200)}`;
-      const retryable = res.status === 429 || res.status >= 500;
+      // Sending is not idempotent: a timeout or 5xx may follow an accepted message.
+      if (res.status >= 500) { status = "unknown"; break; }
+      const retryable = res.status === 429;
       if (!retryable) break;
     } catch (e) {
       lastError = e instanceof Error ? e.message : String(e);
+      status = "unknown";
+      break;
     }
     if (attempt < MAX_ATTEMPTS) await sleep(500 * 2 ** (attempt - 1));
   }
@@ -116,8 +124,8 @@ export async function sendMail(to: string, subject: string, html: string, event?
     recipient: to,
     subject,
     event: event ?? null,
-    status: "failed",
-    attempts: MAX_ATTEMPTS,
+    status,
+    attempts,
     body: html,
     error: lastError.slice(0, 500),
   });
@@ -137,7 +145,7 @@ export function mailTemplate(opts: {
   <div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f1f5f9;padding:24px">
     <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;border:1px solid #e2e8f0">
       <div style="background:#1e3a5f;color:#fff;padding:18px 24px">
-        <div style="font-size:16px;font-weight:700">Shkolla Profesionale Elbasan</div>
+        <div style="font-size:16px;font-weight:700">Shkolla Teknike Elektrike “Gjergj Canco”</div>
         <div style="font-size:12px;opacity:.8">Uendi Platform</div>
       </div>
       <div style="padding:24px;color:#0f172a">

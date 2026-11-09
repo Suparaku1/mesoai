@@ -1,4 +1,5 @@
-import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate, Outlet, redirect, useLocation, useNavigate } from "@tanstack/react-router";
+import { canAccessPath } from "@/lib/route-access";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthedLayout() {
   const { user } = Route.useRouteContext();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { t } = useI18n();
 
@@ -40,7 +42,7 @@ function AuthedLayout() {
 
   async function signOut() {
     await supabase.auth.signOut();
-    toast.success("Dolët me sukses");
+    toast.success(t("auth.signedOut"));
     navigate({ to: "/auth", replace: true, search: { tab: "login" } as never });
   }
 
@@ -48,7 +50,7 @@ function AuthedLayout() {
     <div className="min-h-screen bg-background flex">
       {/* Desktop sidebar */}
       <div className="hidden lg:flex w-64 shrink-0 border-r border-border sticky top-0 h-screen">
-        <AppSidebar isAdmin={isAdmin} />
+        <AppSidebar isAdmin={isAdmin} role={role} />
       </div>
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -63,8 +65,8 @@ function AuthedLayout() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="p-0 w-72">
-                  <SheetTitle className="sr-only">Menyja</SheetTitle>
-                  <AppSidebar isAdmin={isAdmin} onNavigate={() => setMobileOpen(false)} />
+                  <SheetTitle className="sr-only">{t("nav.menu")}</SheetTitle>
+                  <AppSidebar isAdmin={isAdmin} role={role} onNavigate={() => setMobileOpen(false)} />
                 </SheetContent>
               </Sheet>
               <div className="text-sm font-medium truncate lg:hidden">Uendi Platform</div>
@@ -92,12 +94,18 @@ function AuthedLayout() {
         </header>
 
         <main className="flex-1 px-4 sm:px-6 py-6 max-w-7xl w-full mx-auto">
-          <Outlet />
+          {!profileData ? (
+            <div className="py-20 text-center text-sm text-muted-foreground">…</div>
+          ) : canAccessPath(role, location.pathname) ? (
+            <Outlet />
+          ) : (
+            <Navigate to="/dashboard" replace />
+          )}
         </main>
 
         <footer className="border-t border-border/60 py-4">
           <div className="px-4 sm:px-6 text-xs text-muted-foreground text-center">
-            Ky website është krijuar nga <span className="font-medium text-foreground">Esmerald Suparaku</span> · © {new Date().getFullYear()} Uendi Platform
+            {t("land.footer.credit")} <span className="font-medium text-foreground">Esmerald Suparaku</span> · © {new Date().getFullYear()} Uendi Platform
           </div>
         </footer>
       </div>

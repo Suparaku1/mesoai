@@ -32,7 +32,7 @@ function Page() {
     queryKey: ["my-role", user.id],
     queryFn: async () => {
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
-      const roles = (data ?? []).map((r: any) => r.role);
+      const roles = (data ?? []).map((r) => r.role);
       return { isTeacher: roles.includes("teacher") || roles.includes("admin"), isStudent: roles.includes("student") };
     },
   });
@@ -50,7 +50,7 @@ function Page() {
           .select("course_id, courses(id,title)")
           .eq("student_id", user.id)
           .eq("status", "approved");
-        return (data ?? []).map((e: any) => e.courses).filter(Boolean);
+        return (data ?? []).map((e) => e.courses).filter(Boolean);
       }
     },
   });
@@ -61,10 +61,16 @@ function Page() {
     queryFn: async () => {
       const { data } = await supabase
         .from("enrollments")
-        .select("student_id, profiles(id, first_name, last_name, email)")
+        .select("student_id")
         .eq("course_id", courseId)
         .eq("status", "approved");
-      return (data ?? []).map((e: any) => e.profiles).filter(Boolean);
+      const ids = (data ?? []).map((e) => e.student_id);
+      if (!ids.length) return [];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, first_name, last_name, email")
+        .in("id", ids);
+      return profs ?? [];
     },
   });
 
@@ -81,7 +87,7 @@ function Page() {
 
   const mapByStudent = useMemo(() => {
     const m: Record<string, any> = {};
-    (rows ?? []).forEach((r: any) => (m[r.student_id] = r));
+    (rows ?? []).forEach((r) => (m[r.student_id] = r));
     return m;
   }, [rows]);
 
@@ -100,7 +106,7 @@ function Page() {
       qc.invalidateQueries({ queryKey: ["att-rows", courseId, date] });
       toast.success(t("att.saved"));
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   return (
@@ -110,7 +116,7 @@ function Page() {
         <Select value={courseId} onValueChange={setCourseId}>
           <SelectTrigger className="w-72"><SelectValue placeholder={t("att.pickCourse")} /></SelectTrigger>
           <SelectContent>
-            {(courses ?? []).map((c: any) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
+            {(courses ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
           </SelectContent>
         </Select>
         <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="border border-input bg-background rounded-md px-3 py-2 text-sm" />
@@ -120,7 +126,7 @@ function Page() {
         <Card>
           <CardHeader><CardTitle>{t("att.studentsListTitle")}</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            {(students ?? []).map((s: any) => {
+            {(students ?? []).map((s) => {
               const cur = mapByStudent[s.id]?.status;
               return (
                 <div key={s.id} className="flex items-center justify-between gap-3 border-b border-border/40 pb-2">
@@ -142,7 +148,7 @@ function Page() {
         <Card>
           <CardHeader><CardTitle>{t("att.myStatusTitle")}</CardTitle></CardHeader>
           <CardContent>
-            {(rows ?? []).map((r: any) => (
+            {(rows ?? []).map((r) => (
               <div key={r.id} className="flex justify-between border-b border-border/40 py-2 text-sm">
                 <span>{r.date}</span>
                 <Badge>{STATUSES.find((s) => s.v === r.status)?.label ?? r.status}</Badge>

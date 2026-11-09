@@ -34,7 +34,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: import("@tanstack/react-router").ErrorComponentProps) {
   const router = useRouter();
   useEffect(() => { reportLovableError(error, { boundary: "tanstack_root_error_component" }); }, [error]);
   return (
@@ -56,16 +56,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Shkolla Profesionale Elbasan — Uendi Platform" },
-      { name: "description", content: "Uendi Platform — platforma zyrtare e mësimit për Shkollën Profesionale Elbasan." },
-      { property: "og:title", content: "Shkolla Profesionale Elbasan — Uendi Platform" },
+      { title: "Shkolla Teknike Elektrike “Gjergj Canco” — Uendi Platform" },
+      { name: "description", content: "Uendi Platform — platforma zyrtare e mësimit për Shkollën Teknike Elektrike “Gjergj Canco”." },
+      { property: "og:title", content: "Shkolla Teknike Elektrike “Gjergj Canco” — Uendi Platform" },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "/favicon.jpg" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", type: "image/jpeg", href: "/favicon.jpg" },
-      { rel: "apple-touch-icon", href: "/favicon.jpg" },
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "apple-touch-icon", href: "/favicon.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },

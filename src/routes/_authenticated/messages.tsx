@@ -57,14 +57,14 @@ function MessagesPage() {
           .select("student_id, courses!inner(teacher_id)")
           .eq("status", "approved")
           .eq("courses.teacher_id", user.id);
-        (enrolls ?? []).forEach((e: any) => otherIds.add(e.student_id));
+        (enrolls ?? []).forEach((e) => otherIds.add(e.student_id));
       } else {
         const { data: enrolls } = await supabase
           .from("enrollments")
           .select("courses(teacher_id)")
           .eq("student_id", user.id)
           .eq("status", "approved");
-        (enrolls ?? []).forEach((e: any) => {
+        (enrolls ?? []).forEach((e) => {
           if (e.courses?.teacher_id) otherIds.add(e.courses.teacher_id);
         });
       }

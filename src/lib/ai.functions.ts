@@ -112,49 +112,20 @@ Rregulla:
 
     if (!parsed.topics?.length) throw new Error("AI nuk gjeneroi tema");
 
-    // wipe existing topics for this course
-    await supabase.from("topics").delete().eq("course_id", data.courseId);
-
-    // insert topics
-    for (let i = 0; i < parsed.topics.length; i++) {
-      const t = parsed.topics[i] as Record<string, unknown>;
-      const title = String(t.title ?? `Tema ${i + 1}`);
-      const isTest = /^test/i.test(title);
-      const isFinal = /final/i.test(title);
-
-      const { data: topicRow, error: topicErr } = await supabase
-        .from("topics")
-        .insert({
-          course_id: data.courseId,
-          order_index: i,
-          title,
-          summary: String(t.summary ?? ""),
-          objectives: String(t.objectives ?? ""),
-          explanation: String(t.explanation ?? ""),
-          examples: String(t.examples ?? ""),
-          exercises: String(t.exercises ?? ""),
-          exercises_solved: String(t.exercises_solved ?? ""),
-          is_test: isTest,
-          is_final: isFinal,
-        })
-        .select("id")
-        .single();
-      if (topicErr || !topicRow) continue;
-
-      const quiz = Array.isArray(t.quiz) ? t.quiz : [];
-      if (quiz.length) {
-        await supabase.from("quizzes").insert({
-          topic_id: topicRow.id,
-          title: `Quiz: ${title}`,
-          questions: quiz,
-        });
-      }
-    }
-
-    await supabase
-      .from("courses")
-      .update({ ai_processed: true, status: "published" })
-      .eq("id", data.courseId);
-
-    return { ok: true, count: parsed.topics.length };
+    const topics = z.array(z.object({
+      title: z.string().min(1),
+      summary: z.string().optional(), objectives: z.string().optional(),
+      explanation: z.string().optional(), examples: z.string().optional(),
+      exercises: z.string().optional(), exercises_solved: z.string().optional(),
+      quiz: z.array(z.union([
+        z.object({ type: z.literal("mcq"), question: z.string(), options: z.array(z.string()), correct: z.number().int().nonnegative() }),
+        z.object({ type: z.literal("tf"), question: z.string(), correct: z.boolean() }),
+        z.object({ type: z.literal("fill"), question: z.string(), answer: z.string() }),
+      ])).optional(),
+    })).min(1).parse(parsed.topics);
+    const { data: count, error: saveError } = await supabase.rpc("replace_generated_course", {
+      p_course: data.courseId, p_topics: topics,
+    });
+    if (saveError) throw new Error(saveError.message);
+    return { ok: true, count };
   });

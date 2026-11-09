@@ -82,7 +82,7 @@ function CommunicationsPage() {
                 <Label>{t("crm2.contact")}</Label>
                 <Select value={form.contact_id} onValueChange={(v) => setForm({ ...form, contact_id: v })}>
                   <SelectTrigger><SelectValue placeholder={t("crm2.selectContact")} /></SelectTrigger>
-                  <SelectContent>{contacts.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name ?? ""}</SelectItem>)}</SelectContent>
+                  <SelectContent>{contacts.map((c) => <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name ?? ""}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
@@ -104,7 +104,7 @@ function CommunicationsPage() {
         <Card className="p-8 text-center text-sm text-muted-foreground">{t("crm2.noComms")}</Card>
       ) : (
         <div className="space-y-2">
-          {items.map((it: any) => {
+          {items.map((it) => {
             const meta = TYPE_META[it.type] ?? TYPE_META.note;
             const Icon = meta.icon;
             return (

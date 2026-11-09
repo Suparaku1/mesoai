@@ -38,7 +38,7 @@ function Page() {
       if (error) throw error;
     },
     onSuccess: () => toast.success(t("set.saved")),
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const changePw = useMutation({
@@ -48,7 +48,7 @@ function Page() {
       if (error) throw error;
     },
     onSuccess: () => { setPw(""); toast.success(t("set.updated")); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   async function signOut() {

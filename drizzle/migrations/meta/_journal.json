@@ -22,6 +22,90 @@
       "when": 1788698775926,
       "tag": "0002_phase6_security_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791199856795,
+      "tag": "0003_revoke_trigger_fn_exec",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791199998929,
+      "tag": "0004_full_audit_triggers",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791720061561,
+      "tag": "0005_calendar_event_ids",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792352802290,
+      "tag": "0006_tutor_history_and_daily_usage",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792408831972,
+      "tag": "0007_protect_tutor_completion",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793521852364,
+      "tag": "0008_parent_approval_requests",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793618198591,
+      "tag": "0009_audit_profile_and_admin_visibility",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793683296882,
+      "tag": "0010_guard_student_writes_and_atomic_course_index",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793687264079,
+      "tag": "0011_enforce_quiz_results_and_exam_gate",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793687279826,
+      "tag": "0012_atomic_generated_course_content",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793773401108,
+      "tag": "0013_repair_exact_course_vector_retrieval",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793947189563,
+      "tag": "0014_tighten_signup_role_and_reads",
+      "breakpoints": true
     }
   ]
 }

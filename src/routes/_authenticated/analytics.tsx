@@ -75,7 +75,7 @@ function TeacherAnalytics() {
 
   const totalStudents = new Set(data.enrollments.filter((e) => e.status === "approved").map((e) => e.student_id)).size;
   const pending = data.enrollments.filter((e) => e.status === "pending").length;
-  const grades = data.attempts.map((a: any) => a.grade).filter((g: number) => typeof g === "number");
+  const grades = data.attempts.map((a) => a.grade).filter((g: number) => typeof g === "number");
   const avgGrade = grades.length ? grades.reduce((s: number, g: number) => s + g, 0) / grades.length : 0;
 
   // Enrollments by month
@@ -89,7 +89,7 @@ function TeacherAnalytics() {
   // Avg grade per course
   const perCourse = (data.courses as any[]).map((c) => {
     const tIds = new Set(data.topicsByCourse?.[c.id] ?? []);
-    const cGrades = data.attempts.filter((a: any) => tIds.has(a.quiz_id)).map((a: any) => a.grade);
+    const cGrades = data.attempts.filter((a) => tIds.has(a.quiz_id)).map((a) => a.grade);
     const avg = cGrades.length ? cGrades.reduce((s: number, g: number) => s + g, 0) / cGrades.length : 0;
     return { name: c.title.slice(0, 18), mesatare: Number(avg.toFixed(2)) };
   });

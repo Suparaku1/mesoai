@@ -97,7 +97,7 @@ function ErpPage() {
       </div>
 
       <Tabs defaultValue="po">
-        <TabsList>
+        <TabsList className="w-full h-auto flex-wrap sm:w-auto">
           <TabsTrigger value="po"><ShoppingCart className="size-4 mr-1" /> {t("erp.tab.po")}</TabsTrigger>
           <TabsTrigger value="budget"><Wallet className="size-4 mr-1" /> {t("erp.tab.budget")}</TabsTrigger>
         </TabsList>
@@ -110,7 +110,7 @@ function ErpPage() {
             <div className="card-soft p-5 space-y-3">
               <div className="flex justify-between items-center">
                 <h3 className="font-semibold">{t("erp.po.new")}</h3>
-                <Button size="icon" variant="ghost" onClick={() => setPoDraft(null)}><X className="size-4" /></Button>
+                <Button size="icon" variant="ghost" aria-label={t("crm2.cancel")} onClick={() => setPoDraft(null)}><X className="size-4" /></Button>
               </div>
               <div className="grid sm:grid-cols-2 gap-3">
                 <Input placeholder={t("erp.po.supplier")} value={poDraft.supplier ?? ""} onChange={(e) => setPoDraft({ ...poDraft, supplier: e.target.value })} />
@@ -121,8 +121,8 @@ function ErpPage() {
               <Button onClick={savePo}><Save className="size-4 mr-1" /> {t("erp.save")}</Button>
             </div>
           )}
-          <div className="card-soft overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="card-soft overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
               <thead className="bg-muted/40 text-left">
                 <tr><th className="p-3">{t("erp.po.supplier")}</th><th className="p-3">{t("erp.po.status")}</th><th className="p-3">{t("erp.po.totalShort")}</th><th className="p-3">{t("erp.po.expected")}</th><th className="p-3">{t("erp.po.actions")}</th></tr>
               </thead>
@@ -156,7 +156,7 @@ function ErpPage() {
             <div className="card-soft p-5 space-y-3">
               <div className="flex justify-between items-center">
                 <h3 className="font-semibold">{t("erp.budget.title")}</h3>
-                <Button size="icon" variant="ghost" onClick={() => setBudgetDraft(null)}><X className="size-4" /></Button>
+                <Button size="icon" variant="ghost" aria-label={t("crm2.cancel")} onClick={() => setBudgetDraft(null)}><X className="size-4" /></Button>
               </div>
               <div className="grid sm:grid-cols-2 gap-3">
                 <Input placeholder={t("erp.budget.category")} value={budgetDraft.category ?? ""} onChange={(e) => setBudgetDraft({ ...budgetDraft, category: e.target.value })} />
@@ -178,7 +178,7 @@ function ErpPage() {
                   </div>
                   <div className="text-sm">{b.spent_amount.toLocaleString()} / {b.planned_amount.toLocaleString()} ALL</div>
                   <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <div className={`h-full ${pct > 90 ? "bg-destructive" : pct > 70 ? "bg-amber-500" : "bg-primary"}`} style={{ width: `${pct}%` }} />
+                    <div className={`h-full ${pct > 90 ? "bg-destructive" : pct > 70 ? "bg-warning" : "bg-primary"}`} style={{ width: `${pct}%` }} />
                   </div>
                 </div>
               );

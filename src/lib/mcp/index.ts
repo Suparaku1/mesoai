@@ -15,7 +15,7 @@ export default defineMcp({
   title: "Uendi Platform MCP",
   version: "0.3.0",
   instructions:
-    "Mjete për platformën Uendi (Shkolla Profesionale Elbasan). Çdo vegël vepron si përdoruesi i lidhur dhe respekton të drejtat e tij: listim kursesh, statistika, inventar, detyra, si dhe krijim kursi, aprovim regjistrimi, njoftime dhe tiket CRM.",
+    "Mjete për platformën Uendi (Shkolla Teknike Elektrike “Gjergj Canco”). Çdo vegël vepron si përdoruesi i lidhur dhe respekton të drejtat e tij: listim kursesh, statistika, inventar, detyra, si dhe krijim kursi, aprovim regjistrimi, njoftime dhe tiket CRM.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",

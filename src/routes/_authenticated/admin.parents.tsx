@@ -27,13 +27,13 @@ function Page() {
       const { data: profiles } = await supabase.from("profiles").select("id,first_name,last_name,email");
       const { data: roles } = await supabase.from("user_roles").select("user_id,role");
       const roleMap: Record<string, string[]> = {};
-      (roles ?? []).forEach((r: any) => { (roleMap[r.user_id] ??= []).push(r.role); });
-      return (profiles ?? []).map((p: any) => ({ ...p, roles: roleMap[p.id] ?? [] }));
+      (roles ?? []).forEach((r) => { (roleMap[r.user_id] ??= []).push(r.role); });
+      return (profiles ?? []).map((p) => ({ ...p, roles: roleMap[p.id] ?? [] }));
     },
   });
 
-  const parents = (users ?? []).filter((u: any) => u.roles.includes("parent"));
-  const students = (users ?? []).filter((u: any) => u.roles.includes("student"));
+  const parents = (users ?? []).filter((u) => u.roles.includes("parent"));
+  const students = (users ?? []).filter((u) => u.roles.includes("student"));
 
   const { data: links } = useQuery({
     queryKey: ["parent-links-all"],
@@ -52,7 +52,7 @@ function Page() {
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["parent-links-all"] }); toast.success(t("adm.parents.linked")); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const unlink = useMutation({
@@ -69,11 +69,11 @@ function Page() {
         <CardContent className="flex flex-wrap gap-2">
           <Select value={parentId} onValueChange={setParentId}>
             <SelectTrigger className="w-64"><SelectValue placeholder={t("adm.parents.parent")} /></SelectTrigger>
-            <SelectContent>{parents.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.first_name} {p.last_name} · {p.email}</SelectItem>)}</SelectContent>
+            <SelectContent>{parents.map((p) => <SelectItem key={p.id} value={p.id}>{p.first_name} {p.last_name} · {p.email}</SelectItem>)}</SelectContent>
           </Select>
           <Select value={studentId} onValueChange={setStudentId}>
             <SelectTrigger className="w-64"><SelectValue placeholder={t("adm.parents.student")} /></SelectTrigger>
-            <SelectContent>{students.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.first_name} {p.last_name} · {p.email}</SelectItem>)}</SelectContent>
+            <SelectContent>{students.map((p) => <SelectItem key={p.id} value={p.id}>{p.first_name} {p.last_name} · {p.email}</SelectItem>)}</SelectContent>
           </Select>
           <Button onClick={() => link.mutate()} disabled={link.isPending}>{t("adm.parents.link")}</Button>
         </CardContent>
@@ -82,7 +82,7 @@ function Page() {
       <Card>
         <CardHeader><CardTitle>{t("adm.parents.existing")}</CardTitle></CardHeader>
         <CardContent className="space-y-1">
-          {(links ?? []).map((l: any) => (
+          {(links ?? []).map((l) => (
             <div key={l.id} className="flex items-center justify-between text-sm border-b border-border/40 py-1">
               <span>{l.parent?.first_name} {l.parent?.last_name} → {l.student?.first_name} {l.student?.last_name}</span>
               <Button size="icon" variant="ghost" onClick={() => unlink.mutate(l.id)}><Trash2 className="size-4"/></Button>

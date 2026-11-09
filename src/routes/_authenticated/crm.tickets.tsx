@@ -96,7 +96,7 @@ function TicketsPage() {
                 <Label>{t("crm2.contactOptional")}</Label>
                 <Select value={form.contact_id} onValueChange={(v) => setForm({ ...form, contact_id: v })}>
                   <SelectTrigger><SelectValue placeholder={t("crm2.selectContact")} /></SelectTrigger>
-                  <SelectContent>{contacts.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name ?? ""}</SelectItem>)}</SelectContent>
+                  <SelectContent>{contacts.map((c) => <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name ?? ""}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div><Label>{t("crm2.subject")}</Label><Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} /></div>
@@ -118,7 +118,7 @@ function TicketsPage() {
         <Card className="p-8 text-center text-sm text-muted-foreground">{t("crm2.noTickets")}</Card>
       ) : (
         <div className="space-y-2">
-          {tickets.map((t: any) => {
+          {tickets.map((t) => {
             const st = STATUS.find((s) => s.v === t.status);
             return (
               <Card key={t.id} className="p-4 space-y-2">

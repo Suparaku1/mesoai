@@ -11,6 +11,7 @@ import { Mail, RefreshCw, Send } from "lucide-react";
 import { pageMeta } from "@/lib/seo";
 import { useI18n } from "@/i18n";
 import { checkConnectors, retryFailedEmail } from "@/lib/delivery.functions";
+import { canRetryDelivery } from "@/lib/staff-access";
 
 export const Route = createFileRoute("/_authenticated/admin/email-log")({
   head: () => ({
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/_authenticated/admin/email-log")({
 });
 
 type Row = {
+  channel: string;
   id: string;
   recipient: string;
   subject: string;
@@ -48,11 +50,12 @@ function Page() {
   const { data, refetch, isFetching } = useQuery({
     queryKey: ["email-log"],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("email_log")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(200);
+      if (error) throw error;
       return (data ?? []) as Row[];
     },
   });
@@ -122,7 +125,7 @@ function Page() {
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <Badge variant={statusVariant(r.status)}>{r.status}</Badge>
-                {r.status !== "sent" && (
+                {canRetryDelivery(r) && (
                   <Button
                     size="sm"
                     variant="outline"

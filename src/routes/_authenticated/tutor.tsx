@@ -1,177 +1,149 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
-import { useState, useMemo } from "react";
+import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useSuspenseQuery, useQueryClient, useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Plus, Trash2 } from "lucide-react";
+import { useI18n } from "@/i18n";
+import { pageMeta } from "@/lib/seo";
+import { tutorThreadsOptions } from "@/lib/tutor-queries";
+import { createTutorThread, deleteTutorThread } from "@/lib/tutor-history.functions";
+import { useState } from "react";
+import { toast } from "sonner";
+import logo from "@/assets/logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Conversation,
-  ConversationContent,
-  ConversationEmptyState,
-  ConversationScrollButton,
-} from "@/components/ai-elements/conversation";
-import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
-import {
-  PromptInput,
-  PromptInputTextarea,
-  PromptInputFooter,
-  PromptInputSubmit,
-} from "@/components/ai-elements/prompt-input";
-import { Shimmer } from "@/components/ai-elements/shimmer";
-import { Tool, ToolHeader, ToolContent, ToolInput, ToolOutput } from "@/components/ai-elements/tool";
-import { BookOpen, GraduationCap } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { pageMeta } from "@/lib/seo";
-import { useI18n } from "@/i18n";
-
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 export const Route = createFileRoute("/_authenticated/tutor")({
-  head: () => ({ meta: pageMeta("Tutor AI", "Tutori me inteligjencë artificiale që përgjigjet mbi materialet e kurseve të tua.") }),
-  component: TutorPage,
+  head: () => ({
+    meta: pageMeta(
+      "Tutor AI",
+      "Bisedat private me Tutorin AI, burimet e kursit dhe përdorimi ditor.",
+    ),
+  }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(tutorThreadsOptions()),
+  component: TutorLayout,
 });
-
-function TutorPage() {
-  const { t } = useI18n();
-  const { user } = Route.useRouteContext();
-  const [courseId, setCourseId] = useState<string>("all");
-
+function TutorLayout() {
+  const { t, locale } = useI18n();
+  const { data } = useSuspenseQuery(tutorThreadsOptions());
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const { location } = useRouterState();
+  const [creating, setCreating] = useState(false);
+  const [courseId, setCourseId] = useState("all");
   const { data: courses } = useQuery({
-    queryKey: ["my-approved-courses", user.id],
+    queryKey: ["tutor-visible-courses"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("enrollments")
-        .select("course_id, courses(id,title)")
-        .eq("student_id", user.id)
-        .eq("status", "approved");
-      return (data ?? [])
-        .map((r) => r.courses as { id: string; title: string } | null)
-        .filter(Boolean) as Array<{ id: string; title: string }>;
+      const { data, error } = await supabase
+        .from("courses")
+        .select("id,title")
+        .is("deleted_at", null)
+        .order("title");
+      if (error) throw error;
+      return data;
     },
   });
-
-  const transport = useMemo(
-    () =>
-      new DefaultChatTransport({
-        api: "/api/chat",
-        fetch: async (url, init) => {
-          const { data } = await supabase.auth.getSession();
-          const token = data.session?.access_token;
-          const headers = new Headers(init?.headers);
-          if (token) headers.set("Authorization", `Bearer ${token}`);
-          headers.set("Content-Type", "application/json");
-          return fetch(url, { ...init, headers });
-        },
-        prepareSendMessagesRequest: ({ messages, body }) => ({
-          body: { messages, courseId: courseId === "all" ? null : courseId, ...body },
-        }),
-      }),
-    [courseId],
-  );
-
-  const { messages, sendMessage, status, error } = useChat({
-    transport,
-    onError: (e) => toast.error(e.message),
-  });
-
-  const isLoading = status === "submitted" || status === "streaming";
-
+  async function create() {
+    setCreating(true);
+    try {
+      const thread = await createTutorThread({
+        data: { courseId: courseId === "all" ? null : courseId },
+      });
+      await qc.invalidateQueries({ queryKey: ["tutor-threads"] });
+      await navigate({ to: "/tutor/$threadId", params: { threadId: thread.id } });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("tutor.error"));
+    } finally {
+      setCreating(false);
+    }
+  }
+  async function remove(id: string) {
+    if (!confirm(t("tutor.confirmDelete"))) return;
+    try {
+      await deleteTutorThread({ data: { id } });
+      await qc.invalidateQueries({ queryKey: ["tutor-threads"] });
+      if (location.pathname.endsWith(id)) await navigate({ to: "/tutor" });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("tutor.error"));
+    }
+  }
   return (
-    <div className="max-w-3xl mx-auto space-y-4">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <GraduationCap className="size-6 text-primary" /> {t("tutor.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {t("tutor.desc")}
-          </p>
+    <div className="space-y-5 min-w-0">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex gap-3 items-center min-w-0">
+          <img src={logo} alt="Uendi Platform" className="size-10 rounded-full shrink-0" />
+          <div>
+            <h1 className="text-2xl font-bold">{t("tutor.title")}</h1>
+            <p className="text-xs text-muted-foreground">
+              {t("tutor.usage", { used: data.used, limit: data.limit })}
+            </p>
+          </div>
         </div>
-        <Select value={courseId} onValueChange={setCourseId}>
-          <SelectTrigger className="w-[220px]">
-            <SelectValue placeholder={t("tutor.pickCourse")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t("tutor.allCourses")}</SelectItem>
-            {courses?.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.title}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+          <Select value={courseId} onValueChange={setCourseId}>
+            <SelectTrigger className="w-full sm:w-52" aria-label={t("tutor.pickCourse")}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("tutor.allCourses")}</SelectItem>
+              {courses?.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button onClick={create} disabled={creating}>
+            <Plus className="size-4" />
+            {t("tutor.new")}
+          </Button>
+        </div>
       </div>
-
-      <div className="card-soft flex flex-col h-[72vh] overflow-hidden">
-        <Conversation className="flex-1">
-          <ConversationContent>
-            {messages.length === 0 && (
-              <ConversationEmptyState
-                icon={<BookOpen className="size-6" />}
-                title={t("tutor.emptyTitle")}
-                description={t("tutor.emptyDesc")}
-              />
+      <div className="grid min-w-0 gap-5 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <details
+          open={location.pathname === "/tutor" || location.pathname === "/tutor/"}
+          className="min-w-0 border-b border-border pb-3 lg:border-b-0 lg:border-r lg:pr-4"
+        >
+          <summary className="cursor-pointer text-sm font-semibold mb-3">
+            {t("tutor.history")}
+          </summary>
+          <div className="max-h-36 lg:max-h-[65dvh] overflow-y-auto space-y-1">
+            {!data.threads.length && (
+              <p className="text-xs text-muted-foreground">{t("tutor.noHistory")}</p>
             )}
-            {messages.map((m) => (
-              <Message key={m.id} from={m.role as "user" | "assistant"}>
-                <MessageContent>
-                  {m.parts.map((p, i) => {
-                    if (p.type === "text") {
-                      return m.role === "assistant" ? (
-                        <MessageResponse key={i}>{p.text}</MessageResponse>
-                      ) : (
-                        <p key={i} className="whitespace-pre-wrap">{p.text}</p>
-                      );
-                    }
-                    if (p.type.startsWith("tool-") || p.type === "dynamic-tool") {
-                      const part = p as never as {
-                        type: `tool-${string}`;
-                        state: "input-streaming" | "input-available" | "output-available" | "output-error";
-                        input?: unknown;
-                        output?: unknown;
-                        errorText?: string;
-                      };
-                      return (
-                        <Tool key={i} defaultOpen={false}>
-                          <ToolHeader type={part.type} state={part.state} />
-                          <ToolContent>
-                            <ToolInput input={part.input} />
-                            <ToolOutput output={part.output} errorText={part.errorText} />
-                          </ToolContent>
-                        </Tool>
-                      );
-                    }
-                    return null;
-                  })}
-                </MessageContent>
-              </Message>
+            {data.threads.map((thread) => (
+              <div key={thread.id} className="flex items-center gap-1 min-w-0">
+                <Link
+                  to="/tutor/$threadId"
+                  params={{ threadId: thread.id }}
+                  className={`flex-1 min-w-0 rounded-md p-2 text-sm ${location.pathname.endsWith(thread.id) ? "bg-accent text-accent-foreground" : "hover:bg-muted"}`}
+                >
+                  <span className="block truncate">
+                    {thread.title === "Bisedë e re" ? t("tutor.new") : thread.title}
+                  </span>
+                  <time className="text-[10px] text-muted-foreground">
+                    {new Date(thread.updated_at).toLocaleDateString(locale)}
+                  </time>
+                </Link>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="shrink-0 size-8"
+                  aria-label={t("tutor.delete")}
+                  onClick={() => remove(thread.id)}
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
+              </div>
             ))}
-            {status === "submitted" && (
-              <Message from="assistant">
-                <MessageContent>
-                  <Shimmer>{t("tutor.thinking")}</Shimmer>
-                </MessageContent>
-              </Message>
-            )}
-            {error && (
-              <div className="text-sm text-destructive px-2">{t("tutor.error")}: {error.message}</div>
-            )}
-          </ConversationContent>
-          <ConversationScrollButton />
-        </Conversation>
-
-        <div className="border-t border-border p-3">
-          <PromptInput
-            onSubmit={(msg) => {
-              const text = msg.text.trim();
-              if (!text || isLoading) return;
-              void sendMessage({ text });
-            }}
-          >
-            <PromptInputTextarea placeholder={t("tutor.placeholder")} autoFocus />
-            <PromptInputFooter className="justify-end">
-              <PromptInputSubmit status={status} disabled={isLoading} />
-            </PromptInputFooter>
-          </PromptInput>
+          </div>
+        </details>
+        <div className="min-w-0">
+          <Outlet />
         </div>
       </div>
     </div>

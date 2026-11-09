@@ -39,7 +39,7 @@ function Page() {
     queryKey: ["role-ann", user.id],
     queryFn: async () => {
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
-      const roles = (data ?? []).map((r: any) => r.role);
+      const roles = (data ?? []).map((r) => r.role);
       return { canPost: roles.includes("teacher") || roles.includes("admin") };
     },
   });
@@ -59,7 +59,7 @@ function Page() {
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["ann"] }); setForm({ title: "", body: "", audience: "all" }); toast.success(t("ann.published")); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const del = useMutation({
@@ -89,7 +89,7 @@ function Page() {
       )}
 
       <div className="space-y-3">
-        {(items ?? []).map((it: any) => (
+        {(items ?? []).map((it) => (
           <Card key={it.id}>
             <CardContent className="p-4 space-y-1">
               <div className="flex items-center justify-between">

@@ -1,0 +1,48 @@
+export const tutorHistorySq = {
+  "tutor.history": "Bisedat",
+  "tutor.new": "Bisedë e re",
+  "tutor.delete": "Fshi bisedën",
+  "tutor.confirmDelete": "Ta fshijmë këtë bisedë?",
+  "tutor.noHistory": "Nuk ka biseda të ruajtura.",
+  "tutor.usage": "{used} / {limit} pyetje sot",
+  "tutor.sources": "Burimet e kursit",
+  "tutor.limitReached": "Kufiri ditor u arrit. Provoni nesër.",
+  "tutor.loadingHistory": "Po ngarkohen bisedat…",
+  "tutor.back": "Të gjitha bisedat",
+};
+export const tutorHistoryEn: Record<keyof typeof tutorHistorySq, string> = {
+  "tutor.history": "Conversations",
+  "tutor.new": "New conversation",
+  "tutor.delete": "Delete conversation",
+  "tutor.confirmDelete": "Delete this conversation?",
+  "tutor.noHistory": "No saved conversations.",
+  "tutor.usage": "{used} / {limit} questions today",
+  "tutor.sources": "Course sources",
+  "tutor.limitReached": "Daily limit reached. Try tomorrow.",
+  "tutor.loadingHistory": "Loading conversations…",
+  "tutor.back": "All conversations",
+};
+export const tutorHistoryIt: Record<keyof typeof tutorHistorySq, string> = {
+  "tutor.history": "Conversazioni",
+  "tutor.new": "Nuova conversazione",
+  "tutor.delete": "Elimina conversazione",
+  "tutor.confirmDelete": "Eliminare questa conversazione?",
+  "tutor.noHistory": "Nessuna conversazione salvata.",
+  "tutor.usage": "{used} / {limit} domande oggi",
+  "tutor.sources": "Fonti del corso",
+  "tutor.limitReached": "Limite giornaliero raggiunto. Riprova domani.",
+  "tutor.loadingHistory": "Caricamento conversazioni…",
+  "tutor.back": "Tutte le conversazioni",
+};
+export const tutorHistoryDe: Record<keyof typeof tutorHistorySq, string> = {
+  "tutor.history": "Gespräche",
+  "tutor.new": "Neues Gespräch",
+  "tutor.delete": "Gespräch löschen",
+  "tutor.confirmDelete": "Dieses Gespräch löschen?",
+  "tutor.noHistory": "Keine gespeicherten Gespräche.",
+  "tutor.usage": "{used} / {limit} Fragen heute",
+  "tutor.sources": "Kursquellen",
+  "tutor.limitReached": "Tageslimit erreicht. Versuche es morgen.",
+  "tutor.loadingHistory": "Gespräche werden geladen…",
+  "tutor.back": "Alle Gespräche",
+};

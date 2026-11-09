@@ -6,11 +6,12 @@ import {
   Mail, Settings, Contact, ChevronDown, Rocket, Wallet, ShoppingCart, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import logo from "@/assets/logo.jpeg";
+import logo from "@/assets/logo.png";
 import { useState } from "react";
 import { useI18n, type TranslationKey } from "@/i18n";
 
-type NavItem = { to: string; labelKey: TranslationKey; icon: React.ComponentType<{ className?: string }> };
+export type MenuRole = "staff" | "student" | "parent";
+type NavItem = { to: string; labelKey: TranslationKey; icon: React.ComponentType<{ className?: string }>; roles?: MenuRole[] };
 type Group = { key: string; labelKey: TranslationKey; items: NavItem[]; adminOnly?: boolean };
 
 const GROUPS: Group[] = [
@@ -19,37 +20,37 @@ const GROUPS: Group[] = [
     labelKey: "nav.group.main",
     items: [
       { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
-      { to: "/browse", labelKey: "nav.browse", icon: BookOpen },
-      { to: "/tutor", labelKey: "nav.tutor", icon: Sparkles },
+      { roles: ["staff","student"], to: "/browse", labelKey: "nav.browse", icon: BookOpen },
+      { roles: ["staff","student"], to: "/tutor", labelKey: "nav.tutor", icon: Sparkles },
     ],
   },
   {
     key: "learn",
     labelKey: "nav.group.learn",
     items: [
-      { to: "/calendar", labelKey: "nav.calendar", icon: CalendarClock },
-      { to: "/schedule", labelKey: "nav.schedule", icon: CalendarDays },
-      { to: "/exams", labelKey: "nav.exams", icon: GraduationCap },
-      { to: "/attendance", labelKey: "nav.attendance", icon: ClipboardCheck },
-      { to: "/library", labelKey: "nav.library", icon: BookMarked },
+      { roles: ["staff","student"], to: "/calendar", labelKey: "nav.calendar", icon: CalendarClock },
+      { roles: ["staff","student"], to: "/schedule", labelKey: "nav.schedule", icon: CalendarDays },
+      { roles: ["staff","student"], to: "/exams", labelKey: "nav.exams", icon: GraduationCap },
+      { roles: ["staff"], to: "/attendance", labelKey: "nav.attendance", icon: ClipboardCheck },
+      { roles: ["staff","student"], to: "/library", labelKey: "nav.library", icon: BookMarked },
     ],
   },
   {
     key: "comm",
     labelKey: "nav.group.comm",
     items: [
-      { to: "/messages", labelKey: "nav.messages", icon: MessageSquare },
-      { to: "/announcements", labelKey: "nav.announcements", icon: Megaphone },
-      { to: "/parent", labelKey: "nav.parent", icon: Users },
+      { roles: ["staff","student","parent"], to: "/messages", labelKey: "nav.messages", icon: MessageSquare },
+      { roles: ["staff","student","parent"], to: "/announcements", labelKey: "nav.announcements", icon: Megaphone },
+      { roles: ["parent"], to: "/parent", labelKey: "nav.parent", icon: Users },
     ],
   },
   {
     key: "biz",
     labelKey: "nav.group.biz",
     items: [
-      { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3 },
-      { to: "/crm/contacts", labelKey: "nav.crm", icon: Contact },
-      { to: "/finance", labelKey: "nav.finance", icon: Wallet },
+      { roles: ["staff"], to: "/analytics", labelKey: "nav.analytics", icon: BarChart3 },
+      { roles: ["staff"], to: "/crm/contacts", labelKey: "nav.crm", icon: Contact },
+      { roles: ["staff"], to: "/finance", labelKey: "nav.finance", icon: Wallet },
       { to: "/settings", labelKey: "nav.settings", icon: Settings },
     ],
   },
@@ -69,10 +70,17 @@ const GROUPS: Group[] = [
   },
 ];
 
-export function AppSidebar({ isAdmin, onNavigate }: { isAdmin?: boolean; onNavigate?: () => void }) {
+export function menuRoleFor(role?: string | null): MenuRole {
+  return role === "teacher" || role === "admin" ? "staff" : role === "parent" ? "parent" : "student";
+}
+
+export function AppSidebar({ isAdmin, role, onNavigate }: { isAdmin?: boolean; role?: string | null; onNavigate?: () => void }) {
   const { location } = useRouterState();
   const { t } = useI18n();
-  const groups = GROUPS.filter((g) => !g.adminOnly || isAdmin);
+  const mr = menuRoleFor(role);
+  const groups = GROUPS.filter((g) => !g.adminOnly || isAdmin)
+    .map((g) => ({ ...g, items: g.items.filter((i) => !i.roles || i.roles.includes(mr)) }))
+    .filter((g) => g.items.length > 0);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
   return (

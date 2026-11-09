@@ -83,7 +83,7 @@ function PipelinePage() {
                 <Label>{t("crm2.contact")}</Label>
                 <Select value={form.contact_id} onValueChange={(v) => setForm({ ...form, contact_id: v })}>
                   <SelectTrigger><SelectValue placeholder={t("crm2.selectContact")} /></SelectTrigger>
-                  <SelectContent>{contacts.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name ?? ""}</SelectItem>)}</SelectContent>
+                  <SelectContent>{contacts.map((c) => <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name ?? ""}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div><Label>{t("crm2.title")}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={t("crm2.titlePlaceholder")} /></div>
@@ -96,17 +96,17 @@ function PipelinePage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        {stages.map((stage: any) => {
-          const stageLeads = leads.filter((l: any) => l.stage_id === stage.id);
+        {stages.map((stage) => {
+          const stageLeads = leads.filter((l) => l.stage_id === stage.id);
           return (
             <div key={stage.id} className="space-y-2">
               <div className="flex items-center gap-2 px-2">
-                <span className="size-2 rounded-full" style={{ background: stage.color }} />
+                <span className="size-2 rounded-full" style={{ background: stage.color ?? undefined }} />
                 <h3 className="text-sm font-semibold">{stage.name}</h3>
                 <span className="ml-auto text-xs text-muted-foreground">{stageLeads.length}</span>
               </div>
               <div className="space-y-2 min-h-[100px]">
-                {stageLeads.map((lead: any) => {
+                {stageLeads.map((lead) => {
                   const idx = stages.findIndex((s: any) => s.id === lead.stage_id);
                   const next = stages[idx + 1];
                   return (

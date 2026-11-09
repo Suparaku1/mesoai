@@ -29,7 +29,7 @@ function CrmLayout() {
         <h1 className="text-2xl font-bold tracking-tight">CRM</h1>
         <p className="text-sm text-muted-foreground">{t("crm2.layoutSubtitle")}</p>
       </div>
-      <div className="flex flex-wrap gap-1 border-b border-border">
+      <div className="flex gap-1 overflow-x-auto border-b border-border">
         {TABS.map((t) => {
           const active = t.exact
             ? location.pathname === "/crm" || location.pathname === "/crm/"
@@ -40,7 +40,7 @@ function CrmLayout() {
               key={t.to}
               to={t.to}
               className={cn(
-                "inline-flex items-center gap-2 px-4 py-2 text-sm rounded-t-md border-b-2 -mb-px transition-colors",
+                "inline-flex shrink-0 items-center gap-2 px-3 sm:px-4 py-2 text-sm rounded-t-md border-b-2 -mb-px transition-colors",
                 active
                   ? "border-primary text-primary font-medium"
                   : "border-transparent text-muted-foreground hover:text-foreground",

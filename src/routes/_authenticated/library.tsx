@@ -26,7 +26,7 @@ function Page() {
     queryKey: ["role-lib", user.id],
     queryFn: async () => {
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
-      const roles = (data ?? []).map((r: any) => r.role);
+      const roles = (data ?? []).map((r) => r.role);
       return { canAdd: roles.includes("teacher") || roles.includes("admin") };
     },
   });
@@ -46,7 +46,7 @@ function Page() {
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["library"] }); setForm({ title: "", description: "", category: "", external_url: "" }); toast.success(t("lib.added")); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const del = useMutation({
@@ -72,7 +72,7 @@ function Page() {
       )}
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {(items ?? []).map((it: any) => (
+        {(items ?? []).map((it) => (
           <Card key={it.id}>
             <CardContent className="p-4 space-y-2">
               <div className="flex items-start justify-between gap-2">

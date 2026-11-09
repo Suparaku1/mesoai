@@ -18,13 +18,13 @@ export const listAllUsers = createServerFn({ method: "GET" })
     ]);
 
     const rolesByUser = new Map<string, string[]>();
-    (roles ?? []).forEach((r: any) => {
+    (roles ?? []).forEach((r) => {
       const arr = rolesByUser.get(r.user_id) ?? [];
       arr.push(r.role);
       rolesByUser.set(r.user_id, arr);
     });
 
-    return (profiles ?? []).map((p: any) => ({
+    return (profiles ?? []).map((p) => ({
       ...p,
       roles: rolesByUser.get(p.id) ?? [],
     }));

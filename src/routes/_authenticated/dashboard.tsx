@@ -103,13 +103,13 @@ function TeacherDashboard() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {courses.map((c) => (
               <Link key={c.id} to="/courses/$id" params={{ id: c.id }} className="card-soft p-5 hover:border-primary/50 transition">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                   <span className="text-xs px-2 py-0.5 rounded-full bg-accent text-accent-foreground">{c.drejtimi} · {c.klasa}{c.paralelja ?? ""}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full ${c.status === "published" ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"}`}>
                     {c.status === "published" ? t("status.published") : t("status.draft")}
                   </span>
                 </div>
-                <h3 className="font-semibold">{c.title}</h3>
+                <h3 className="font-semibold break-words">{c.title}</h3>
                 {c.description && <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{c.description}</p>}
               </Link>
             ))}
@@ -165,13 +165,13 @@ function StudentDashboard() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {enrollments.map((e) => (
               <div key={e.id} className="card-soft p-5">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                   <span className="text-xs px-2 py-0.5 rounded-full bg-accent text-accent-foreground">{e.courses?.drejtimi}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full ${e.status === "approved" ? "bg-success/15 text-success" : e.status === "pending" ? "bg-warning/20 text-warning-foreground" : "bg-destructive/15 text-destructive"}`}>
                     {e.status === "approved" ? t("status.approved") : e.status === "pending" ? t("status.pending") : t("status.rejected")}
                   </span>
                 </div>
-                <h3 className="font-semibold">{e.courses?.title}</h3>
+                <h3 className="font-semibold break-words">{e.courses?.title}</h3>
                 {e.status === "approved" && e.courses && (
                   <Link to="/courses/$id" params={{ id: e.courses.id }} className="mt-3 inline-block text-sm text-primary hover:underline">{t("dash.openCourse")}</Link>
                 )}
@@ -187,10 +187,10 @@ function StudentDashboard() {
 function Stat({ icon: Icon, label, value, accent }: { icon: typeof BookOpen; label: string; value: number; accent?: boolean }) {
   return (
     <div className="card-soft p-5 flex items-center gap-4">
-      <div className={`size-11 rounded-lg flex items-center justify-center ${accent ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"}`}>
+      <div className={`size-11 shrink-0 rounded-lg flex items-center justify-center ${accent ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"}`}>
         <Icon className="size-5" />
       </div>
-      <div>
+      <div className="min-w-0">
         <div className="text-2xl font-bold">{value}</div>
         <div className="text-xs text-muted-foreground">{label}</div>
       </div>
